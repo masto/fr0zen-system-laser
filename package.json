@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "paper": "^0.12.17",
+    "paperjs-offset": "^1.0.8"
+  }
+}

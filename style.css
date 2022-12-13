@@ -26,6 +26,21 @@ canvas {
   height: 100%;
 }
 
+#person {
+  position: fixed;
+  bottom: 60px;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+label {
+  color:white;
+  padding-inline-start: 10px;
+  padding-inline-end: 5px;
+}
+
 #menu {
   position: fixed;
   bottom: 10px;

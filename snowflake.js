@@ -1,5 +1,5 @@
 class Snowflake {
-  constructor(point, anim, f) {
+  constructor(point, anim, f, seed) {
     this.animation = anim;
     this.angle = 60;
     this.pos = point;
@@ -8,6 +8,7 @@ class Snowflake {
     this.outerLines = [];
     this.hexagons = [];
     this.tween;
+    this.rand = sfc32(seed[0], seed[1], seed[2], seed[3]);
 
     this.buildUp(point, f);
   }
@@ -157,13 +158,13 @@ class Snowflake {
     let hexa;
     if (line) {
       hexa = new Path.RegularPolygon(
-        line.getPointAt((Math.random() * line.length) / 2 + line.length / 2),
+        line.getPointAt((this.rand() * line.length) / 2 + line.length / 2),
         6,
-        Math.max(line.length / 5, (Math.random() * line.length) / 2)
+        Math.max(line.length / 5, (this.rand() * line.length) / 2)
       );
       hexa.strokeWidth = line.strokeWidth;
     } else {
-      hexa = new Path.RegularPolygon(this.pos, 6, Math.random() * 100 + 100);
+      hexa = new Path.RegularPolygon(this.pos, 6, this.rand() * 100 + 100);
       hexa.strokeWidth = this.mainLine.strokeWidth;
     }
     hexa.strokeColor = "DarkSlateBlue";
@@ -189,13 +190,13 @@ class Snowflake {
 
   decorateLine(line, depth) {
     let lines = [];
-    for (let i = 0; i < Math.floor(Math.random() * 4 + 2); i++) {
+    for (let i = 0; i < Math.floor(this.rand() * 4 + 2); i++) {
       let miniLine = line.clone();
-      miniLine.scale(1 / (Math.random() * 5 + 1));
+      miniLine.scale(1 / (this.rand() * 5 + 1));
       miniLine.strokeWidth = (line.strokeWidth * 3) / 4;
 
       let start = line.getPointAt(
-        Math.max(miniLine.length, Math.random() * line.length)
+        Math.max(miniLine.length, this.rand() * line.length)
       );
       miniLine.position = start;
       miniLine.rotate(60, miniLine.firstSegment.point);
@@ -209,7 +210,7 @@ class Snowflake {
       }
 
       let conti =
-        Math.random() < 0.7 && miniLine.length > this.mainLine.length / 3;
+        this.rand() < 0.7 && miniLine.length > this.mainLine.length / 3;
       if (conti) {
         lines = lines.concat(this.decorateLine(miniLine, depth + 1));
       }
@@ -307,7 +308,7 @@ class Snowflake {
     compound.children = compound.children.filter(
       (entry) => this.countContains(compound, entry) <= 1
     );
-    console.log(compound.children.length);
+    //console.log(compound.children.length);
   }
 
   countContains(compound, item) {
@@ -335,7 +336,7 @@ class Snowflake {
   randInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+    return Math.floor(this.rand() * (max - min + 1)) + min;
   }
 
   toggleColor() {
