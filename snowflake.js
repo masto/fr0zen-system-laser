@@ -1,14 +1,21 @@
+const mainStrokes2Color = "red";
+const mainStrokesColor = "white";
+const bluepaperColor = "CornflowerBlue";
+const engravesColor = "DarkSlateBlue";
+const cutlineColor = "green";
+const holesColor = "purple";
+const laserCutColor1 = "#04DD00";
+const laserCutColor2 = "#017BC6";
+
 class Snowflake {
-  constructor(point, anim, f, seed) {
-    this.animation = anim;
+  constructor(point, f, seed) {
     this.angle = 60;
     this.pos = point;
 
     this.innerLines = [];
     this.outerLines = [];
     this.hexagons = [];
-    this.tween;
-    this.rand = sfc32(seed[0], seed[1], seed[2], seed[3]);
+    this.rand = sfc32(seed[0], seed[1], seed[2], seed[3]);  // Create the random number generator from seed
 
     this.buildUp(point, f);
   }
@@ -24,63 +31,71 @@ class Snowflake {
     return newPaths;
   }
 
+  // Return an array containing the Items from this.lineGroup whose stroke color is col
   getLayerByStrokeColor(col) {
     return this.lineGroup.children.filter(
       (item) => item.strokeColor != null && item.strokeColor.equals(col)
     );
   }
 
+    // Return an array containing the Items from this.lineGroup whose fill color is col
   getLayerByFillColor(col) {
     return this.lineGroup.children.filter(
       (item) => item.fillColor != null && item.fillColor.equals(col)
     );
   }
 
+  // Get all the Items in the project whose name is the passed string
   getItemsByName(name) {
     return project.getItems({
       name: name,
     });
   }
 
+  // Build the basic shapes used in the snowflake, centering the constructon
+  // on point.
   async buildUp(point, f) {
-    this.lineGroup = new Group();
+    this.lineGroup = new Group();   // The group into which the snowflake's defining bits and pieces are put
+
+    // Build this.mainLine, the main stroke.
     this.mainLine = new Path.Line(point, point.subtract([0, 300]));
-    this.mainLine.strokeColor = "white";
+    this.mainLine.strokeColor = mainStrokesColor;
     this.mainLine.strokeWidth = 15;
     this.mainLine.strokeCap = "round";
 
-    if (this.animation) {
-      this.mainLine.dashArray = [this.mainLine.length, this.mainLine.length];
-      await this.mainLine.tweenFrom(
-        { dashOffset: this.mainLine.length },
-        500 * f
-      );
-      this.mainLine.tweenTo({ strokeColor: "grey" }, 200 * f);
-    }
+    // Make the side branches of the main stroke on both sides of mainLine
+    // Importantly, they get added to this.lineGroup
+    this.decorateLine(this.mainLine, 0);
 
-    let newlines = this.decorateLine(this.mainLine, 0);
+    // Now flip a copy of what's in this.lineGroup around the vertical axis 
+    // and put the copy in this.lineGroup
+    this.flip();
 
-    let fliplines = this.flip();
+    // Make a group of hexagons with a hexagonal hole in the middle the 
+    // group centered somewhere along this.mainLine.
+    // Importantly, the hexagons' stroke color is engravesColor and the holes'
+    // stroke color is holesColor and they get added to this.lineGroup
+    this.decorateBackground(this.mainLine);
 
-    let decolines = this.decorateBackground(this.mainLine);
-
+    // Put this.mainLine in this.lineGroup
     this.lineGroup.addChild(this.mainLine);
 
-    let spreadGroups = this.spread();
+    // Take what's in this.lineGroup and duplicate it all six times, rotating
+    // it by 60 degrees each time and put the result back in this.lineGroup
+    this.spread();
 
-    let decolines2 = this.decorateBackground();
+    // Make a group of hexagons with a hole in the middle of the group 
+    // centered at the origin.
+    // Importantly, the hexagons' stroke color is engravesColor and the holes'
+    // stroke color is holesColor and they get added to this.lineGroup
+    this.decorateBackground();
 
-    let outline1 = this.createOutLine(20);
-
-    this.mainStrokes2 = this.getLayerByStrokeColor(new Color("red"));
-    this.mainStrokes = this.getLayerByStrokeColor(new Color("white"));
-
-    //sideStrokesCut = copyColorToNewGroup('red', 'white');
-    this.hexas = this.getLayerByStrokeColor(new Color("DarkSlateBlue"));
-    this.cutline = this.getLayerByStrokeColor(new Color("green"))[0];
-    this.holes = this.getLayerByFillColor(new Color("purple"));
+    //Assemble all the bits and pieces into the final snowflake
+    this.solidifyLine();
   }
 
+  // Return a path that's offset by dist units from the union of everything in 
+  // this.lineGroup.
   createOutLine(dist) {
     let shape = new Path();
     this.lineGroup.children.forEach((path) => {
@@ -110,39 +125,29 @@ class Snowflake {
         shape = tmp2;
       }
     });
-    //let p = PaperOffset.offset(shape, 20);
-    //shape.remove();
-    //shape = p;
-    if (!this.animation) {
-      shape.strokeColor = "green";
-    }
+    shape.strokeColor = undefined;
     shape.fillColor = undefined;
+    shape.remove();
     return shape;
   }
 
-  spread() {
+    // Take what's in this.lineGroup and duplicate it all six times, rotating
+    // it by 60 degrees each time. Put it all in this.lineGroup.
+    spread() {
     let newGroup = new Group();
     let groupSize;
     for (let i = 1; i < 6; i++) {
-      //6
       let sym = this.lineGroup.clone();
       groupSize = sym.children.length;
       sym.rotate(this.angle * i, this.pos);
       newGroup.addChildren(sym.children);
     }
-
     newGroup.addChildren(this.lineGroup.children);
     this.lineGroup = newGroup;
-
-    let spreadGroups = [];
-    for (let i = 0; i < 5; i++) {
-      spreadGroups.push(
-        this.lineGroup.children.slice(groupSize * i, groupSize * (i + 1))
-      );
-    }
-    return spreadGroups;
   }
 
+  // Make a vertical axis mirror copy of what's in this.lineGroup and put it 
+  // back in this.lineGroup
   flip() {
     let flip = this.lineGroup.clone();
     flip.scale(-1, 1, this.lineGroup.bounds.bottomLeft);
@@ -151,10 +156,12 @@ class Snowflake {
     let lngth = newGroup.children.length;
     newGroup.addChildren(flip.children);
     this.lineGroup = newGroup;
-    return this.lineGroup.children.slice(lngth);
   }
 
-  decorateBackground(line) {
+    // Make a group of hexagons and the hole in the middle of the group 
+    // centered at the group's origin. Center the group someplace along 
+    // line, if one is passed, on the center of the snowflake if not.
+    decorateBackground(line) {
     let hexa;
     if (line) {
       hexa = new Path.RegularPolygon(
@@ -167,8 +174,9 @@ class Snowflake {
       hexa = new Path.RegularPolygon(this.pos, 6, this.rand() * 100 + 100);
       hexa.strokeWidth = this.mainLine.strokeWidth;
     }
-    hexa.strokeColor = "DarkSlateBlue";
+    hexa.strokeColor = engravesColor;
     hexa.sendToBack();
+    hexa.remove();
     this.lineGroup.addChild(hexa);
     for (let i = 1; i < 4; i++) {
       let smallHexa = hexa.clone();
@@ -176,20 +184,20 @@ class Snowflake {
 
       if (i == 3) {
         smallHexa.strokeWidth = 1;
-        smallHexa.fillColor = "purple";
-        smallHexa.strokeColor = "purple";
+        smallHexa.fillColor = holesColor;
+        smallHexa.strokeColor = holesColor;
         smallHexa.sendToBack();
       } else {
         smallHexa.strokeWidth = hexa.strokeWidth * (1 - i * 0.3);
         smallHexa.sendToBack();
       }
+      smallHexa.remove();
       this.lineGroup.addChild(smallHexa);
     }
-    return this.lineGroup.children.slice(-4);
   }
 
-  decorateLine(line, depth) {
-    let lines = [];
+    // Make the side branches of the main stroke on both sides of mainLine
+    decorateLine(line, depth) {
     for (let i = 0; i < Math.floor(this.rand() * 4 + 2); i++) {
       let miniLine = line.clone();
       miniLine.scale(1 / (this.rand() * 5 + 1));
@@ -202,40 +210,53 @@ class Snowflake {
       miniLine.rotate(60, miniLine.firstSegment.point);
       miniLine.bringToFront();
       this.lineGroup.addChild(miniLine);
-      lines.push(miniLine);
       if (depth < 1) {
-        miniLine.strokeColor = "red";
+        miniLine.strokeColor = mainStrokes2Color;
       } else {
-        miniLine.strokeColor = "DarkSlateBlue";
+        miniLine.strokeColor = engravesColor;
       }
 
       let conti =
         this.rand() < 0.7 && miniLine.length > this.mainLine.length / 3;
       if (conti) {
-        lines = lines.concat(this.decorateLine(miniLine, depth + 1));
+        this.decorateLine(miniLine, depth + 1);
       }
     }
-    return lines;
   }
 
-  addBorder() {
-    let cutline = this.getLayerByStrokeColor(new Color("green"))[0];
-    cutline.remove();
-
-    let outlineOut = this.createOutLine(70);
-    cutline = cutline.insertAbove(outlineOut);
-
-    let c1 = new Path.Circle(outlineOut.firstSegment.point.add([0, 35]), 15);
-
-    this.outline = new Group(outlineOut, c1);
-    this.outline.strokeColor = "pink";
+  // Make a border 70 units from what's in this.lineGroup. Add a hanger hole
+  // at the top, put 'em in a Group and return it.
+  makeBorder() {
+    let outline = this.createOutLine(70);
+    let hangerLoc = new Point([outline.position.x, outline.bounds.point.y + 35]);
+    let borderPoint = outline.getNearestPoint(hangerLoc);
+    hangerLoc.y = borderPoint.y + 35;
+    return new Group(outline, new Path.Circle(hangerLoc, 15));
   }
 
+  // Assemble all the bits and pieces
   solidifyLine() {
-    let cutline = this.getLayerByStrokeColor(new Color("green"))[0];
+    // cutline is a path 20 units offset from the bounding path of what's in 
+    // this.lineGroup before we start messing with things.
+    let cutline = this.createOutLine(20);
+
+    // Make the Group this.outline, the border around the snowflake with 
+    // the hanger hole.
+    this.outline = this.makeBorder();
+
+    // Create this.engravings, the Group containing the Items to be be 
+    // engraved. They all have a stroke color of engravesColor.
+    this.engravings = new Group();
+    this.getLayerByStrokeColor(new Color(engravesColor)).forEach((path) => {
+      let engrave = PaperOffset.offsetStroke(path, path.strokeWidth / 2);
+      engrave.fillColor = engravesColor;
+      engrave.strokeColor = undefined;
+      this.engravings.addChild(engrave);
+    });
 
     let lines = [];
-    let arr = this.getLayerByStrokeColor(new Color("white"));
+    // Using the mainStrokes as a base, create their expansions in lines[]
+    let arr = this.getLayerByStrokeColor(new Color(mainStrokesColor));
     arr.forEach((item) => {
       item.scale(2, this.pos);
       let newLine = PaperOffset.offsetStroke(item, item.strokeWidth, {
@@ -246,12 +267,14 @@ class Snowflake {
       item.remove();
     });
 
-    arr = this.getLayerByStrokeColor(new Color("red"));
+    // Using the mainStrokes2 as a base, create their expansions, then put
+    // slightly larger circles at the ends of each line, pushing everything 
+    // onto lines as we go
+    arr = this.getLayerByStrokeColor(new Color(mainStrokes2Color));
     arr.forEach((item) => {
       let newLine = PaperOffset.offsetStroke(item, item.strokeWidth, {
         cap: "round",
       });
-      //newLine.strokeColor = 'red';
       newLine.fillColor = "yellow";
       lines.push(newLine);
       let r1 = new Path.Circle(
@@ -264,6 +287,7 @@ class Snowflake {
       item.remove();
     });
 
+    // Put a copy of the union of everything in lines into finalItem
     let finalItem = new Path();
     lines.forEach((item) => {
       let tmp = item.unite(finalItem);
@@ -273,30 +297,38 @@ class Snowflake {
     });
     finalItem.fillColor = "orange";
 
+    // Punch finalItem out of cutline, which at this point is 
+    // 20 units bigger than the bounding curve around the
+    // stuff ginned up in buildUp().
     let tmpcut = cutline.subtract(finalItem);
     finalItem.remove();
     cutline.remove();
-    //this.cutline = tmpcut
     this.cutline = tmpcut;
 
+    this.lineGroup.remove();
+
+    // Create bluePaper. Add the overall outline and the hanger hole. Then add
+    // the holes in the hexagons.
     this.bluePaper = new CompoundPath();
     this.bluePaper.fillRule = "evenodd";
     this.bluePaper.addChild(this.outline.children[0].clone());
     this.bluePaper.addChild(this.outline.children[1].clone());
-    this.holes.forEach((hole) => this.bluePaper.addChild(hole));
-    this.bluePaper.fillColor = "CornflowerBlue";
+    (this.getLayerByFillColor(new Color(holesColor))).forEach((hole) => this.bluePaper.addChild(hole));
+    this.bluePaper.fillColor = bluepaperColor;
     this.bluePaper.shadowColor = new Color(0, 0, 0);
     this.bluePaper.shadowBlur = 4;
     this.bluePaper.shadowOffset = new Point(2, 2);
     this.bluePaper.sendToBack();
+    // The stuff that's to be engraved on the blue paper is already in this.engravings
 
-    this.engravings = new Group(this.hexas);
-
+    // Create whitepaper. Add the overall outline and the hanger hole.
+    // Then add cutline, as modified above and then get rid of any stray
+    // free-floating "islands" that may have formed 
     this.whitepaper = new CompoundPath();
     this.whitepaper.fillRule = "evenodd";
     this.whitepaper.addChildren(this.outline.children);
     this.whitepaper.addChild(this.cutline);
-    this.whitepaper.fillColor = "white";
+    this.whitepaper.fillColor = mainStrokesColor;
     this.whitepaper.shadowColor = new Color(0, 0, 0);
     this.whitepaper.shadowBlur = 4;
     this.whitepaper.shadowOffset = new Point(2, 2);
@@ -308,7 +340,6 @@ class Snowflake {
     compound.children = compound.children.filter(
       (entry) => this.countContains(compound, entry) <= 1
     );
-    //console.log(compound.children.length);
   }
 
   countContains(compound, item) {
@@ -339,28 +370,32 @@ class Snowflake {
     return Math.floor(this.rand() * (max - min + 1)) + min;
   }
 
-  toggleColor() {
-    if (this.whitepaper.fillColor) {
-      this.whitepaper.strokeColor = this.whitepaper.fillColor;
+  // Switch whitepaper and bluepaper back and forth between the representation 
+  // for the display and the laser cutter svg.
+  toggleMode() {
+    if (this.whitepaper.fillColor) {  // Display --> Laser
+      this.whitepaper.strokeColor = laserCutColor1;
       this.whitepaper.fillColor = null;
-      this.bluePaper.strokeColor = this.bluePaper.fillColor;
+      this.bluePaper.strokeColor = laserCutColor2;
       this.bluePaper.fillColor = null;
 
       this.whitepaper.shadowColor = null;
       this.whitepaper.shadowBlur = 0;
       this.whitepaper.shadowOffset = 0;
+      this.whitepaper.position.x += this.whitepaper.bounds.width + 10;
       this.bluePaper.shadowColor = null;
       this.bluePaper.shadowBlur = 0;
       this.bluePaper.shadowOffset = 0;
-    } else {
-      this.whitepaper.fillColor = this.whitepaper.strokeColor;
+    } else {                            // Laser --> Display
+      this.whitepaper.fillColor = mainStrokesColor;
       this.whitepaper.strokeColor = null;
-      this.bluePaper.fillColor = this.bluePaper.strokeColor;
+      this.bluePaper.fillColor = bluepaperColor;
       this.bluePaper.strokeColor = null;
 
       this.whitepaper.shadowColor = new Color(0, 0, 0);
       this.whitepaper.shadowBlur = 4;
       this.whitepaper.shadowOffset = new Point(2, 2);
+      this.whitepaper.position.x = this.bluePaper.position.x;
       this.bluePaper.shadowColor = new Color(0, 0, 0);
       this.bluePaper.shadowBlur = 4;
       this.bluePaper.shadowOffset = new Point(2, 2);

@@ -1,4 +1,6 @@
 let flakesize = 600;
+const defaultFlakeName = "snowflake.svg";
+let flakeName = defaultFlakeName;
 
 let gridsize = 1;
 
@@ -62,28 +64,30 @@ window.onload = function () {
       open = false;
     }
     s1.whitepaper.position = event.point;
-    //console.log(event);
   };
 };
 
+
+//Create a new snowflake
 function generate() {
   project.activeLayer.removeChildren();
-
+  // Generate the seed the snowflake instantiation process will use for random 
+  // numbers. If the user has put a name and/or birthdate in, hash the string 
+  // for the seed. Otherwise use Math.random to make it.
   let seedString = document.getElementById("fname").value + document.getElementById("lname").value +
     document.getElementById("birthdate").value;
   let seed;
   if (seedString.length != 0) {
     seed = cyrb128(seedString);
+    flakeName = seedString + ".svg";
   } else {
-    seed = [Math.random() * 2147483648, Math.random() * 2147483648, Math.random() * 2147483648, Math.random() * 2147483648];
+    seed = [(Math.random() * 4294967295) | 0, (Math.random() * 4294967295) | 0, 
+      (Math.random() * 4294967295) | 0, (Math.random() * 4294967295) | 0];
+    flakeName = defaultFlakeName;
   }
-
+  // Instantiate the snowflake asynchronously
   (async function () {
-    s1 = new Snowflake(view.bounds.center, false, 5, seed);
-    //s1.animationFlow(10);
-    s1.addBorder();
-    s1.solidifyLine();
-    //s1.colorForLaser();
+    s1 = new Snowflake(view.bounds.center, 5, seed);
   })();
 }
 
@@ -91,14 +95,14 @@ function downloadSVGLaser() {
   s1.whitepaper.position = view.bounds.center;
   s1.bluePaper.position = view.bounds.center;
   s1.engravings.position = view.bounds.center;
-  s1.toggleColor();
+  s1.toggleMode();
   var svg = project.exportSVG({ asString: true, bounds: "content" });
   var svgBlob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
   var svgUrl = URL.createObjectURL(svgBlob);
   var downloadLink = document.createElement("a");
   downloadLink.href = svgUrl;
-  downloadLink.download = "snowflake.svg";
-  s1.toggleColor();
+  downloadLink.download = flakeName;
+  s1.toggleMode();
   document.body.appendChild(downloadLink);
   downloadLink.click();
   document.body.removeChild(downloadLink);
