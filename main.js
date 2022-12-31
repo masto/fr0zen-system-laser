@@ -33,8 +33,8 @@ window.onload = function () {
 
   view.onMouseDown = function (event) {
     if (!open) {
-      s1.whitepaper.tweenTo(
-        { position: s1.whitepaper.position.subtract(moveVec) },
+      s1.whitePaper.tweenTo(
+        { position: s1.whitePaper.position.subtract(moveVec) },
         { easing: "easeInOutQuint", duration: 200 }
       );
 
@@ -48,7 +48,7 @@ window.onload = function () {
       );
       open = true;
     } else {
-      s1.whitepaper.tweenTo(
+      s1.whitePaper.tweenTo(
         { position: view.bounds.center },
         { easing: "easeInOutQuint", duration: 200 }
       );
@@ -63,7 +63,7 @@ window.onload = function () {
       );
       open = false;
     }
-    s1.whitepaper.position = event.point;
+    s1.whitePaper.position = event.point;
   };
 };
 
@@ -92,7 +92,7 @@ function generate() {
 }
 
 function downloadSVGLaser() {
-  s1.whitepaper.position = view.bounds.center;
+  s1.whitePaper.position = view.bounds.center;
   s1.bluePaper.position = view.bounds.center;
   s1.engravings.position = view.bounds.center;
   s1.toggleMode();
