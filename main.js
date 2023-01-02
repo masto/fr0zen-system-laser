@@ -1,25 +1,37 @@
-let flakesize = 600;
-const defaultFlakeName = "snowflake.svg";
+/**
+ * # main.js
+ *
+ * Version 1.0.0
+ *
+ * This file is a part of the Fr0zenSystem snowflake generator optimized and
+ * extended for the Glowforge laser cutter.
+ *
+ * # [Blue Oak Model License 1.0.0](https://blueoakcouncil.org/license/1.0.0)
+ *
+ */
+
+/**
+ *
+ * Constants
+ *
+ */
+const defaultFlakeName = "snowflake";   // Default filename
+const flakesize = 600;                  // How big the snowflake is assumed to be
+const zoomScale = 0.45;                 // Zoom factor (See code)
+
 let flakeName = defaultFlakeName;
-
-let gridsize = 1;
-
 let open = false;
 let s1;
 let moveVec;
-let btn;
 
 paper.install(window);
+
+// Establish what happens on window load -- i.e., get things going
 window.onload = function () {
   paper.setup("paperCanvas");
 
-  let startsize = Math.min(view.bounds.width, view.bounds.height) * 0.3;
-  let endsize = gridsize * flakesize;
-  let zoomlevel = (startsize * 1.5) / endsize; //0.3;
-
-  view.zoom = zoomlevel;
-  view.center = new Point(endsize / 2, endsize / 2);
-  btn = document.getElementById("generate");
+  view.zoom = Math.min(view.bounds.width, view.bounds.height) * zoomScale / flakesize;
+  view.center = new Point(flakesize / 2, flakesize / 2);
 
   let canvas = document.getElementById("paperCanvas");
 
@@ -68,18 +80,25 @@ window.onload = function () {
 };
 
 
-//Create a new snowflake
+/**
+ *
+ * Generate a new Snowflake, either randomly or tied to a specfic name and
+ * birthdate, if the user has supplied any or all of these.
+ *
+ **/
 function generate() {
   project.activeLayer.removeChildren();
   // Generate the seed the snowflake instantiation process will use for random 
   // numbers. If the user has put a name and/or birthdate in, hash the string 
   // for the seed. Otherwise use Math.random to make it.
-  let seedString = document.getElementById("fname").value + document.getElementById("lname").value +
-    document.getElementById("birthdate").value;
+  let seedString = document.getElementById("fname").value +
+    "_" + document.getElementById("lname").value +
+    "_" + document.getElementById("birthdate").value;
+  seedString = seedString.replaceAll(/ /g, "_");
   let seed;
-  if (seedString.length != 0) {
+  if (seedString != "__") {
     seed = cyrb128(seedString);
-    flakeName = seedString + ".svg";
+    flakeName = defaultFlakeName + "_" + seedString;
   } else {
     seed = [(Math.random() * 4294967295) | 0, (Math.random() * 4294967295) | 0, 
       (Math.random() * 4294967295) | 0, (Math.random() * 4294967295) | 0];
@@ -87,10 +106,15 @@ function generate() {
   }
   // Instantiate the snowflake asynchronously
   (async function () {
-    s1 = new Snowflake(view.bounds.center, 5, seed);
+    s1 = new Snowflake(seed);
   })();
 }
 
+/**
+ *
+ * Generate and save the svg file representing the current Snowflake
+ *
+ **/
 function downloadSVGLaser() {
   s1.whitePaper.position = view.bounds.center;
   s1.bluePaper.position = view.bounds.center;
@@ -101,15 +125,24 @@ function downloadSVGLaser() {
   var svgUrl = URL.createObjectURL(svgBlob);
   var downloadLink = document.createElement("a");
   downloadLink.href = svgUrl;
-  downloadLink.download = flakeName;
+  downloadLink.download = flakeName + ".svg";
   s1.toggleMode();
   document.body.appendChild(downloadLink);
   downloadLink.click();
   document.body.removeChild(downloadLink);
 }
 
-// Hash a string to four 32-bit quantities. Algorithm and public domain implementation by bryc
-// See: https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
+/**
+ *
+ * Hash a string to four 32-bit quantities.
+ *
+ * @param {string} str - the String to hash
+ * @returns an array of four 32-bit integers representing the hash of the string
+ *
+ * Algorithm and public domain implementation by bryc.
+ * See: https://stackoverflow.com/questions/521295
+ *
+ **/
 function cyrb128(str) {
   let h1 = 1779033703, h2 = 3144134277,
       h3 = 1013904242, h4 = 2773480762;
@@ -127,8 +160,20 @@ function cyrb128(str) {
   return [(h1^h2^h3^h4)>>>0, (h2^h1)>>>0, (h3^h1)>>>0, (h4^h1)>>>0];
 }
 
-// "Simple Fast Counter" PRNG. Algorithm from http://pracrand.sourceforge.net/. Public domain JS implementation by bryc
-// See: https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
+/**
+ *
+ * Create a "Simple Fast Counter" PRNG function seeded with four 32-bit seeds.
+ *
+ * @param {number} a - the first 32-bit seed
+ * @param {number} b - the second 32-bit seed
+ * @param {number} c - the third 32-bit seed
+ * @param {number} d - the fourth 32-bit seed
+ * @returns the seeded PRNG function that when invoked returns a PRN, r, where 0 <= r < 1
+ *
+ * Algorithm from http://pracrand.sourceforge.net/. Public domain JS implementation by bryc.
+ * See: https://stackoverflow.com/questions/521295
+ *
+ **/
 function sfc32(a, b, c, d) {
   return function() {
     a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
