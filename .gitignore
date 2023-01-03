@@ -1,0 +1,6 @@
+# Ignore the stuff in /node_modules except for what we actually use
+# We track these because they're necessary for the github pages deployment,
+# and so need to be in the github repo, not because we're changing them!
+/node_modules
+!/node_modules/paper/dist/paper-full.min.js
+!/node_modules/paperjs-offset/dist/paperjs-offset.min.js
