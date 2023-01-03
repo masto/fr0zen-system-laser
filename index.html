@@ -14,8 +14,8 @@
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"
     />
-    <script src="node_modules/paper/dist/paper-full.js"></script>
-    <script src="node_modules/paperjs-offset/dist/paperjs-offset.js"></script>
+    <script src="node_modules/paper/dist/paper-full.min.js"></script>
+    <script src="node_modules/paperjs-offset/dist/paperjs-offset.min.js"></script>
 
     <script src="snowflake.js"></script>
     <script src="main.js"></script>
@@ -33,10 +33,10 @@
     </div>
     <div id="menu">
       <div>
-        <button id="generate" onclick="generate()">
+        <button id="generate" onclick="generate()" title="Generate snowflake">
           <span class="material-icons">sync</span>
         </button>
-        <button onclick="downloadSVGLaser()">
+        <button onclick="downloadSVGLaser()" title="Download .svg file">
           <span class="material-icons"> file_download </span>
         </button>
       </div>
