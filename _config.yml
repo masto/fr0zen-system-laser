@@ -1,2 +1,0 @@
-# The default gh_pages excludes node_modules but we need 'em
-include   : ["node_modules"]
