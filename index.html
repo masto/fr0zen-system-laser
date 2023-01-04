@@ -1,59 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>Fr0zen System</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<head>
+  <title>Fr0zen System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Amarante&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" type="text/css" href="style.css" />
+  <link rel="stylesheet" type="text/css" href="style.css" />
 
     <link
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"
     />
-    <script src="node_modules/paper/dist/paper-full.min.js"></script>
-    <script src="node_modules/paperjs-offset/dist/paperjs-offset.min.js"></script>
+  <script src="node_modules/paper/dist/paper-full.min.js"></script>
+  <script src="node_modules/paperjs-offset/dist/paperjs-offset.min.js"></script>
 
-    <script src="snowflake.js"></script>
-    <script src="main.js"></script>
-  </head>
-  <body>
-    <h1>Fr0zenSystem</h1>
-    <canvas id="paperCanvas"></canvas>
-    <div id="person">
-      <label for="fname">First name:</label>
-      <input id="fname">
-      <label for="lname">Last name:</label>
-      <input id="lname">
-      <label for="birthdate">Birthday:</label>
-      <input type="date" id="birthdate">
+  <script src="snowflake.js"></script>
+  <script src="main.js"></script>
+</head>
+<body>
+  <h1>Fr0zenSystem</h1>
+  <canvas id="paperCanvas"></canvas>
+  <div id="seed">
+    <label for="seed-text">If you type something here (such as a name or birthdate), you can generate a unique snowflake
+      based on the "seed" you enter. Or leave it blank to get a random snowflake every time.</label>
+    <input id="seed-text">
+  </div>
+  <div id="menu">
+    <div>
+      <button id="generate" onclick="generate()" title="Generate snowflake">
+        <span class="material-icons">sync</span>
+      </button>
+      <button onclick="downloadSVGLaser()" title="Download .svg file">
+        <span class="material-icons"> file_download </span>
+      </button>
     </div>
-    <div id="menu">
-      <div>
-        <button id="generate" onclick="generate()" title="Generate snowflake">
-          <span class="material-icons">sync</span>
-        </button>
-        <button onclick="downloadSVGLaser()" title="Download .svg file">
-          <span class="material-icons"> file_download </span>
-        </button>
-      </div>
-    </div>
-    <div id="references">
-      <a href="https://github.com/dehne/fr0zen-system-laser/blob/main/README.md">
-        Usage help
-      </a>
+  </div>
+  <div id="references">
+    <a href="https://github.com/dehne/fr0zen-system-laser/blob/main/README.md">
+      Usage help
+    </a>
       <br/>
-      <a href="https://github.com/dehne/fr0zen-system-laser">
-        Glowforge fork on github
-      </a>
+    <a href="https://github.com/dehne/fr0zen-system-laser">
+      Glowforge fork on github
+    </a>
       - by dehne<br/>
-      <a href="https://github.com/bleeptrack/fr0zen-system-laser">
+    <a href="https://github.com/bleeptrack/fr0zen-system-laser">
         original code on github</a
       >
-      - <a href="https://twitter.com/Bleeptrack">by bleeptrack</a>
-    </div>
-  </body>
+    - <a href="https://twitter.com/Bleeptrack">by bleeptrack</a>
+  </div>
+</body>
 </html>

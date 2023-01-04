@@ -26,19 +26,26 @@ canvas {
   height: 100%;
 }
 
-#person {
+#seed {
   position: fixed;
   bottom: 60px;
   left: 0;
   display: flex;
+  flex-flow: row wrap;
   justify-content: center;
   width: 100%;
 }
 
+#seed-text {
+  width: 75%;
+}
+
 label {
-  color:white;
-  padding-inline-start: 10px;
-  padding-inline-end: 5px;
+  color: white;
+  width: 75%;
+  text-align: justify;
+  font-size: 80%;
+  padding-bottom: 5px;
 }
 
 #menu {
