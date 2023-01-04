@@ -82,26 +82,24 @@ window.onload = function () {
 
 /**
  *
- * Generate a new Snowflake, either randomly or tied to a specfic name and
- * birthdate, if the user has supplied any or all of these.
+ * Generate a new Snowflake, either randomly or tied to a specfic seed value,
+ * if the user has supplied one.
  *
  **/
 function generate() {
   project.activeLayer.removeChildren();
   // Generate the seed the snowflake instantiation process will use for random 
-  // numbers. If the user has put a name and/or birthdate in, hash the string 
+  // numbers. If the user has put custom seed text in, hash the string 
   // for the seed. Otherwise use Math.random to make it.
-  let seedString = document.getElementById("fname").value +
-    "_" + document.getElementById("lname").value +
-    "_" + document.getElementById("birthdate").value;
+  let seedString = document.getElementById("seed-text").value;
   seedString = seedString.replaceAll(/ /g, "_");
   let seed;
-  if (seedString != "__") {
+  if (seedString != "") {
     seed = cyrb128(seedString);
     flakeName = defaultFlakeName + "_" + seedString;
   } else {
-    seed = [(Math.random() * 4294967295) | 0, (Math.random() * 4294967295) | 0, 
-      (Math.random() * 4294967295) | 0, (Math.random() * 4294967295) | 0];
+    seed = [(Math.random() * 4294967295) | 0, (Math.random() * 4294967295) | 0,
+    (Math.random() * 4294967295) | 0, (Math.random() * 4294967295) | 0];
     flakeName = defaultFlakeName;
   }
   // Instantiate the snowflake asynchronously
@@ -145,13 +143,13 @@ function downloadSVGLaser() {
  **/
 function cyrb128(str) {
   let h1 = 1779033703, h2 = 3144134277,
-      h3 = 1013904242, h4 = 2773480762;
+    h3 = 1013904242, h4 = 2773480762;
   for (let i = 0, k; i < str.length; i++) {
-      k = str.charCodeAt(i);
-      h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
-      h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
-      h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
-      h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+    k = str.charCodeAt(i);
+    h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+    h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+    h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+    h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
   }
   h1 = Math.imul(h3 ^ (h1 >>> 18), 597399067);
   h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
